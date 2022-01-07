@@ -1,7 +1,7 @@
 SRC = tests.cpp
 
-CXX = clang++ #because I am using macOS.
-CXXFLAGS = -Wall -Wextra -std=c++14 -O3 -Wfatal-errors
+CXX = g++ #because I am using macOS.
+CXXFLAGS = -Wall -Wextra -std=c++14 -O3 
 
 EXE = $(SRC:.cpp=.x)
 
