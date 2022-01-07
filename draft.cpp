@@ -2,38 +2,48 @@
 #include <utility>
 
 
-//*********LIST ITERATOR CLASS ****************
-
 template <typename pool_type, typename address_type, typename T>
 class list_iterator{
 
   pool_type* pool;
   address_type ind;
-
 public:
+  using difference_type = std::ptrdiff_t;
   using value_type = T;
+  using pointer = T*;
+  using reference = T&;
+  using iterator_category = std::output_iterator_tag;
   explicit list_iterator(pool_type* pool, address_type ind) : pool(pool), ind(ind){}
 
   list_iterator& operator++(){
-    ind = pool->pool.at(ind - 1).next;
+    ind = pool->at(ind - 1).next;
     return *this;
   }
 
   list_iterator operator++(int){
     list_iterator tmp(ind);
-    ind = pool->pool.at(ind - 1).next;
+    ind = pool->at(ind - 1).next;
     return tmp;
   }
 
-  value_type& operator*()const{
-    return pool->pool.at(ind - 1).value;
+  bool operator==(const list_iterator& other){
+    return pool->at(ind - 1).value == other.pool->at(other.ind - 1).value;
+  }
+
+  bool operator<(const list_iterator& other){
+    return pool->at(ind - 1).value < other.pool->at(other.ind - 1).value;
+  }
+
+  bool operator>(const list_iterator& other){
+    return pool->at(ind - 1).value > other.pool->at(other.ind - 1).value;
+  }
+
+  reference operator*()const{
+    return pool->at(ind - 1).value;
   }
 
 };
 
-//************************---------**************************
-
-//******************** LIST POOL ****************************
 
 template <typename T, typename N = std::size_t>
 class list_pool{
@@ -44,10 +54,11 @@ class list_pool{
 
   std::vector<node_t> pool;
 
+
   using list_type = N;
   using value_type = T;
   using size_type = typename std::vector<node_t>::size_type;
-  //using pool_type = std::vector<node_t>;
+  using pool_type = std::vector<node_t>;
   list_type free_node_list; // at the beginning, it is empty
 
   node_t& node(list_type x) noexcept { return pool[x-1]; }
@@ -60,28 +71,28 @@ public:
     pool.reserve(n);
   } // reserve n nodes in the pool
 
-  using iterator = list_iterator<list_pool, N, T>;
-  using const_iterator = list_iterator<const list_pool, N, const T>;
+  using iterator = list_iterator<pool_type, N, T>;
+  using const_iterator = list_iterator<pool_type, N, const T>;
 
   iterator begin(list_type x){
-    return iterator(this, x);
+    return iterator(&pool, x);
   }
   iterator end(list_type ){
-    return iterator(this, list_type(0));
+    return iterator(&pool, list_type(0));
   }// this is not a typo
 
   const_iterator begin(list_type x) const{
-    return const_iterator(this, x);
+    return const_iterator(&pool, x);
   }
   const_iterator end(list_type ) const{
-    return const_iterator(this, list_type(0));
+    return const_iterator(&pool, list_type(0));
   }
 
   const_iterator cbegin(list_type x) const{
-    return const_iterator(this, x);
+    return const_iterator(&pool, x);
   }
   const_iterator cend(list_type ) const{
-    return const_iterator(this, list_type(0));
+    return const_iterator(&pool, list_type(0));
   }
 
   list_type new_list()noexcept{
@@ -114,7 +125,7 @@ public:
   const list_type& next(list_type x)const{
     return node(x).next;
   }
- //************ PUSH FRONT *****************
+
   list_type push_front(const T& val, list_type head){
     return push_front(std::move(val), head);
   }
@@ -135,7 +146,7 @@ public:
     return newNodeAddr;
   }
 
-//************ PUSH BACK ******************
+
   list_type push_back(const T& val, list_type head){
     return push_back(std::move(val), head);
   }
@@ -164,7 +175,6 @@ public:
     return head == end() ? newNodeAddr : head;
   }
 
-//******** DELETE FIRST NODE **********
   list_type free(list_type x){
     if(x == end())
       return end();
@@ -176,7 +186,6 @@ public:
     next(x - 1) = fnl;
     return head;
   } // delete first node
-  // ************FREE ENTIRE LIST*****************
   list_type free_list(list_type x){
     list_type head = free(x);
     while(head != end()){
