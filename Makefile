@@ -1,6 +1,6 @@
 SRC = tests.cpp
 
-CXX = g++ #because I am using macOS.
+CXX = g++ #I used orfeo cluster for compiling.
 CXXFLAGS = -Wall -Wextra -std=c++14 -O3 
 
 EXE = $(SRC:.cpp=.x)
